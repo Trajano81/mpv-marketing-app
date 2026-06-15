@@ -1,0 +1,266 @@
+Panel Sintético de Consumidores
+Plataforma de pre-test publicitario con agentes de IA — Mercado mexicano
+Documento de especificación funcional y técnica — MVP Fase 1
+Insumo de diseño para Claude Design y de implementación para Claude Code
+Versión 0.1 (borrador de trabajo) · Junio 2026
+Nombre de producto provisional. Documento vivo: se actualizará conforme avance el diseño y el spike técnico.
+Contenido
+1. Resumen ejecutivo
+Construiremos una plataforma SaaS multi-tenant que funciona como un panel sintético de consumidores (un focus group simulado con IA) orientado al mercado mexicano. Un equipo de marketing sube material audiovisual de campaña junto con el contexto de su producto, define qué perfiles de consumidor deben evaluarlo, y la plataforma devuelve un score de efectividad creativa, un diagnóstico por dimensión y un PDF con recomendaciones de mejora.
+La evaluación la realizan ~175–200 personas sintéticas configurables, ancladas en datos socioeconómicos y culturales reales de México (regla AMAI, ENIGH del INEGI, Censo 2020). El score se construye con el vocabulario estándar de la industria de copy testing (jerga tipo Kantar LINK), y un umbral configurable —estándar de 7.5 fijado por el administrador, con override por tenant— decide si la pieza pasa o regresa a creatividad.
+La apuesta crítica del MVP (Fase 1): validar que un modelo multimodal puede analizar video e imagen de campaña y producir reacciones diferenciadas y con validez aparente entre niveles socioeconómicos y regiones. Si una persona NSE C− de Oaxaca y una A/B de CDMX reaccionan de forma plausiblemente distinta a la misma pieza, el producto es viable. Todo lo demás se construye encima de eso.
+Advertencia metodológica (importante para el posicionamiento)
+Los scores sintéticos son una herramienta direccional —excelente para descartar piezas claramente débiles y priorizar creatividad— pero no son ground truth. Su credibilidad comercial depende de calibrarlos contra paneles reales. El producto se posiciona como early signal / pre-screening, no como sustituto del estudio de mercado. El sistema se diseña desde el día 1 para registrar predicción contra resultado real (esa es la función del sistema de memoria incremental, sección 9).
+2. Alcance y fases
+Fase 1 — MVP (foco de este documento)
+Input prioritario: video e imagen (campañas, videos de influencer, vallas/OOH, fotos y demás touchpoints audiovisuales). Es el punto más crítico y el que de-riesga la solución.
+Flujo completo de un solo producto: creación → audiovisuales con contexto de exposición → segmentación → encuesta → análisis → resultados + PDF.
+Panel: personas sintéticas ancladas en datos MX, evaluación individual (fan-out paralelo).
+Scoring: índice compuesto tipo LINK + gate de intención de compra configurable.
+Persistencia: memoria inicial en JSON para insights incrementales.
+Fase 2 — Posterior al MVP
+Brand lift sintético: grupos de control vs. expuesto (A/B test) para medir recordación, consideración e intención. Etiquetado como experimental (ver sección 8).
+Configurabilidad completa (CRUD) en el SPA admin: catálogos de segmentación, banco de preguntas y dimensiones de score editables sin código.
+Calibración: contraste de predicciones contra paneles reales y/o ventas.
+3. Ciclo de producto (experiencia del cliente — equipo de marketing)
+El recorrido del usuario del tenant se organiza en un asistente (wizard) de cinco pasos, seguido de la lectura de resultados:
+Paso 1 — Crear producto y su contexto
+Tipo/categoría de producto, marca, descripción y atributos clave (precio, posicionamiento, target declarado).
+Este contexto alimenta tanto al agente de percepción como a la selección de personas.
+Paso 2 — Subir audiovisuales con contexto de exposición
+Cada pieza (video, imagen, valla, post de influencer) debe declarar dónde se va a exponer (canal y plaza): TV abierta nacional, OOH/valla en Monterrey, influencer en TikTok, etc. Esto no es metadato decorativo: es el insumo que define y pondera qué personas evalúan la pieza. Una valla la “ven” personas de cierta geografía; un influencer de TikTok llega a NSE y edades específicas. El panel se arma dinámicamente según la exposición.
+Paso 3 — Segmentación (elegir agentes)
+Selección de perfiles a partir de catálogos configurables en el SPA admin:
+Ciudades / estados / tipo de localidad (urbano, rural, zona metropolitana).
+Nivel socioeconómico (AMAI: A/B, C+, C, C−, D+, D, E).
+Bandas de ingreso, edad, composición familiar, hábitos de medios.
+Nota: una persona puede quedar marcada como “fuera de target” para ciertos productos según su NSE. Esa señal —a quién NO le habla la pieza— es tan valiosa como el score.
+Paso 4 — Configurar encuesta
+Preguntas preestablecidas tomadas del banco (qué piensa del producto, de los colores, la música, los personajes, el mensaje, el precio percibido).
+Espacio para subir preguntas diferenciales (custom) propias de la campaña.
+Selección de las dimensiones de score más importantes y sus pesos (ver sección 5).
+Fijar el umbral de aprobación (override del estándar admin de 7.5).
+Paso 5 — Revisión y lanzamiento
+Resumen de configuración, número de agentes, costo y tiempo estimados, y disparo del análisis.
+Lectura de resultados
+Vista ejecutiva: score compuesto + gate de intención vs. umbral (semáforo pasa/regresa a creatividad).
+Desglose gráfico y tabular, comparable y filtrable por perfil (NSE × ciudad × ingreso), con heatmap por segmento y verbatims.
+Recomendaciones de mejora de los audiovisuales y del producto (generadas por el agente recomendador).
+4. Modelo de dominio (entidades principales)
+Entidad
+Descripción y campos clave
+Tenant
+Cliente (marca/agencia). Plan, límites de uso, usuarios, umbral por defecto propio.
+Product
+Producto a evaluar: categoría, marca, descripción, atributos, target declarado.
+Asset
+Pieza audiovisual. Tipo (video/imagen/valla/post), archivo, y contexto de exposición (canal + plaza) → selector de personas.
+PerceptionReport
+Salida estructurada del agente de percepción sobre un Asset: escenas, colores, audio/música, personajes, texto en pantalla, claims, momentos de marca, timestamps.
+SegmentationConfig
+Selección de perfiles/agentes para una evaluación (referencias a catálogos configurables).
+Persona / Agent
+Arquetipo de consumidor: geo, NSE, demografía, economía, psico-cultural, propensión por categoría, hábitos de medios, peso poblacional.
+Survey
+Conjunto de preguntas (banco + custom), tipadas y mapeadas a dimensiones de score. Pesos y umbral elegidos.
+EvaluationRun
+Ejecución de un análisis: producto + assets + panel + encuesta. Estado, costo, latencia.
+AgentResponse
+Respuesta de una persona a la encuesta: puntajes por dimensión, objeciones, precio percibido, verbatim.
+Result / Report
+Agregación ponderada: score compuesto, gate de intención, desglose por segmento, recomendaciones, PDF.
+InsightMemory
+Registro persistente (JSON) de evaluaciones pasadas para insights incrementales.
+Esquema de persona (referencia para implementación)
+{ id, geo:{estado, region, tipo_localidad, zona_metro},
+  nse_amai: &quot;C-&quot;,
+  demografia:{edad, genero, escolaridad_jefe, ocupacion, hogar:{dependientes}},
+  economia:{ingreso_mensual_mxn, gasto_discrecional_pct, disposicion_pago_categoria},
+  cultura_psico:{aspiracional_vs_practico, confianza_publicidad, valores, modismos},
+  consumo_categorias:{incluye:[...], excluye:[...]},
+  medios:{tv_abierta, streaming, redes:[...], confianza_influencers},
+  peso_poblacional: 0.043 }
+Anclaje en datos reales: la regla AMAI clasifica los hogares mexicanos en siete niveles (A/B, C+, C, C−, D+, D, E) sobre seis dimensiones de bienestar; la versión vigente (Regla AMAI 2024) se calibra con la ENIGH 2022 del INEGI. La AMAI publica además estimaciones de NSE desagregadas hasta nivel de manzana/AGEB usando el Censo 2020, lo que permite anclar personas por geografía fina (urbano/rural, por estado).
+5. Modelo de scoring (jerga LINK)
+Adoptamos el léxico de copy testing de la industria (Kantar LINK / System1) por credibilidad ante clientes de marketing. El score es un Índice de Efectividad Creativa compuesto por sub-dimensiones, con pesos elegidos por el tenant:
+Dimensión
+Qué mide
+Origen / referencia
+Memorabilidad / recordación
+¿Se queda en la cabeza?
+LINK / System1
+Atractivo (Enjoyment)
+¿Gusta, entretiene?
+LINK
+Vínculo con marca (Fluency)
+¿Recuerdan qué marca era?
+System1 / LINK
+Claridad del mensaje
+¿Se entiende qué vende?
+LINK
+Relevancia cultural
+“Esto me habla a mí”
+Diferenciador MX
+Distintividad
+¿Se distingue de la categoría?
+Ehrenberg-Bass
+Intención de compra / persuasión
+¿Lo compraría?
+Actionable standard
+Umbral y gate
+El gate de aprobación se aplica sobre la intención de compra, no sobre el compuesto. El estándar accionable definido es “que lo quieran comprar”. El compuesto sirve para diagnosticar por qué: una pieza puede ser muy disfrutable pero no vincular con la marca → se reescribe el branding, no toda la pieza.
+Estándar global: umbral por defecto de 7.5, configurable por el administrador en el SPA admin.
+Override por tenant: cada tenant puede fijar su propio umbral de aprobación.
+Regla: intención de compra ponderada &lt; umbral → la pieza regresa al proceso de recreación creativa.
+6. Especificación de pantallas
+Dos aplicaciones front-end. Para el MVP se sugiere una sola app Next.js con enrutado por rol (tenant vs. admin). Cada pantalla se describe como brief de diseño/implementación para Claude Design y Claude Code.
+6.1 Portal del Tenant (equipo de marketing)
+Pantalla
+Contenido y componentes clave
+T1 — Login / selector de workspace
+Autenticación, selección de marca/workspace si el usuario pertenece a varios.
+T2 — Dashboard
+Lista de productos y evaluaciones con estado (borrador, en análisis, listo), score y gate (semáforo). CTA “Nuevo análisis”.
+T3 — Wizard P1: Producto
+Formulario de contexto: categoría, marca, descripción, atributos, target declarado.
+T4 — Wizard P2: Audiovisuales
+Carga de piezas (drag &amp; drop). Por cada pieza: tipo, preview, y panel de contexto de exposición (canal + plaza). Validación de formato/tamaño.
+T5 — Wizard P3: Segmentación
+Selección de perfiles desde catálogos: ciudades/estados, NSE, ingreso, edad. Vista previa del tamaño y composición del panel resultante.
+T6 — Wizard P4: Encuesta
+Banco de preguntas preestablecidas (toggle), editor de preguntas diferenciales, selección de dimensiones de score + pesos, campo de umbral (prellenado con el estándar).
+T7 — Wizard P5: Revisión y lanzamiento
+Resumen de configuración, nº de agentes, costo y tiempo estimados, botón Lanzar.
+T8 — Estado del análisis
+Progreso en vivo (percepción → fan-out → agregación → reporte), con conteo de agentes completados.
+T9 — Resultados: vista ejecutiva
+Score compuesto + gate de intención vs. umbral (semáforo). Resumen de fortalezas y debilidades por dimensión.
+T10 — Resultados: desglose
+Gráficos + tabla filtrables por perfil (NSE × ciudad × ingreso), heatmap por segmento, panel de verbatims, comparador entre piezas.
+T11 — Resultados: recomendaciones
+Mejoras concretas a los audiovisuales y al producto generadas por el agente recomendador. Exportar PDF.
+T12 — (Fase 2) Brand Lift
+Configuración de grupos control vs. expuesto y lectura de lift en recordación/consideración/intención.
+6.2 SPA de Administración (equipo interno / operador)
+Pantalla
+Contenido y componentes clave
+A1 — Login / dashboard admin
+Métricas globales: tenants activos, evaluaciones, uso, costo, runs recientes.
+A2 — Gestión de tenants
+CRUD de tenants, planes, límites de uso, usuarios y umbral por defecto del tenant.
+A3 — Catálogo de segmentación
+CRUD de ciudades/estados, tipos de localidad, niveles NSE, bandas de ingreso, rangos de edad.
+A4 — Editor de perfiles/agentes
+Definir y editar arquetipos de persona y sus pesos poblacionales, anclados a AMAI/ENIGH/Censo. Importar/validar distribuciones.
+A5 — Banco de preguntas
+CRUD de preguntas preestablecidas, tipo (Likert/opción/abierta) y mapeo a dimensiones de score.
+A6 — Dimensiones de score y umbral estándar
+Definir dimensiones LINK, pesos por defecto y el umbral estándar global (7.5) que el tenant puede sobreescribir.
+A7 — Configuración de modelos/APIs
+Selección del proveedor multimodal y edición de los prompts de los agentes (percepción, simulador de persona, recomendador).
+A8 — Monitor de ejecuciones
+Lista de runs con costo, latencia, errores y reintentos.
+A9 — Memoria / insights incrementales
+Explorador del store de evaluaciones pasadas: patrones por categoría, NSE y región.
+Nota de alcance: para el MVP, los catálogos (A3–A6) pueden arrancar como seeds en JSON fijos; el CRUD completo se difiere a Fase 2. La configurabilidad es la promesa del producto, no el primer entregable.
+7. Arquitectura técnica
+7.1 Stack recomendado para el MVP
+Front-end: Next.js, una sola app con enrutado por rol (portal tenant + SPA admin).
+Back-end: FastAPI (Python) como monolito que hace ingestión, percepción, simulación, scoring y PDF. Python es el hogar natural de ffmpeg, whisper, los SDK multimodales y los frameworks de agentes.
+NestJS se difiere: introducirlo desde el día 1 implica mantener dos back-ends y un contrato entre servicios justo cuando se busca velocidad. Cuando se requiera el patrón gateway/BFF, Nest entra como API gateway y Python queda como servicio de inferencia/agentes detrás, llegando a la arquitectura de tres stacks sin pagar el costo de coordinación ahora.
+Orquestación: el fan-out de personas es un patrón paralelo simple (asyncio + structured output con Pydantic), no un grafo multiagente. Un framework como LangGraph se reserva para etapas con orquestación real (p. ej. el agente recomendador).
+7.2 Pipeline de evaluación
+Ingestión multimodal del/los Asset(s) según su tipo.
+Agente de percepción → descripción estructurada neutral (escenas, colores, música, personajes, texto en pantalla, claims, precio, momentos de marca).
+Fan-out a personas → N llamadas paralelas; cada persona responde la encuesta tipada según su perfil.
+Agregación ponderada → score compuesto + gate de intención + desglose por segmento.
+Generación de PDF + persistencia en memoria (JSON).
+Agente recomendador → mejoras a pieza y producto a partir de objeciones y dimensiones bajas.
+Nota de costo/latencia: 175–200 llamadas por evaluación es manejable en paralelo pero no gratuito. Para el spike, usar 5–8 personas contrastantes; para el MVP, evaluar correr el panel completo vs. ~30–40 arquetipos ponderados por población (recomendado empezar por arquetipos y subir densidad después).
+7.3 La pieza crítica: API de análisis de video e imagen
+Comparativa del estado actual (junio 2026) de las opciones para la capa de percepción:
+Proveedor
+Video nativo
+Fortaleza
+Rol sugerido en MVP
+Google Gemini (3.x)
+Sí
+Ingesta video por File API (hasta ~2 GB / 90–120 min), muestreo 1 FPS + audio, soporte de URL de YouTube, salida estructurada.
+Primario para percepción de video. Elimina la plomería ffmpeg+whisper.
+Anthropic Claude
+No (imagen sí)
+Imagen y documentos nativos; razonamiento fuerte.
+Simulación de personas, razonamiento, recomendador y piezas de imagen (vallas, fotos).
+OpenAI GPT
+No
+Imagen nativa; sin video nativo (solo frames, pierde audio/temporalidad).
+Alternativa de imagen/razonamiento.
+TwelveLabs (Pegasus/Marengo)
+Sí (especialista)
+Video-native; supera a Gemini en benchmarks de segmentación; usado en publicidad; búsqueda semántica de video.
+Upgrade futuro para inteligencia de video a escala.
+Recomendación: para el MVP, usar Gemini para la percepción de video (ingesta nativa, ~300 tokens por segundo de video, timestamps) y Claude para la simulación de personas, el recomendador y las piezas de imagen. Mantener ffmpeg + whisper.cpp como fallback open-source opcional. Reservar TwelveLabs como evolución cuando el análisis de video deba escalar o profundizar.
+8. Fase 2 — Brand lift sintético (A/B con grupos de control)
+Mide el efecto de la exposición comparando un grupo de control (no expuesto) contra un grupo expuesto, sobre métricas de marca (recordación, consideración, favorabilidad, intención). El lift es el delta. Con personas sintéticas: se corre la encuesta de marca en personas “vírgenes” (baseline), luego se expone a personas equivalentes a la pieza y se vuelve a medir.
+Advertencia fuerte: el brand lift sintético es mucho más especulativo que el score de una sola pieza, porque simula el recuerdo de haber visto un anuncio —justo lo que un LLM no tiene base empírica para predecir. Va etiquetado como experimental, en Fase 2, y diseñado desde ya para guardar predicción-vs-real. No debe presentarse como capacidad madura.
+9. Memoria e insights incrementales
+Cada evaluación se persiste para construir conocimiento acumulado y, fundamentalmente, para habilitar la calibración futura.
+{ evaluacion_id, tenant, categoria, score_global,
+  desglose_nse:{ &quot;A/B&quot;:8.1, &quot;C&quot;:6.9, &quot;D+&quot;:4.2 },
+  objeciones_top:[...], recomendaciones:[...],
+  prediccion_vs_real:{ ... }, fecha }
+MVP: JSON plano + filtros. Suficiente para acumular y consultar.
+Después: vector store para retrieval semántico de patrones (“en bebidas, NSE C−/D+ del norte penalizan claims aspiracionales”). Migrar cuando duela, no antes.
+10. Persistencia y estrategia de migración
+La base de datos se gestiona localmente por ahora, pero se diseña para migrar mediante refactoring a MongoDB o a una solución en la nube (Oracle/RDS, DynamoDB). La clave no es elegir “una base de datos” sino diseñar una capa de persistencia agnóstica por encima de ella: si se hace bien, el cambio de motor queda contenido en una sola capa y no toca la lógica de negocio ni el pipeline de agentes.
+Patrón Repository
+Las entidades de dominio se definen una sola vez (modelos Pydantic, ya que estamos en FastAPI) y todo acceso a datos pasa por una interfaz abstracta de repositorio. Hoy se implementa con un backend local; mañana se escribe otra implementación para Mongo u Oracle sin tocar el pipeline ni los agentes.
+class EvaluationRepository(Protocol):
+    def save(self, run: EvaluationRun) -&gt; None: ...
+    def get(self, run_id: UUID) -&gt; EvaluationRun | None: ...
+    def list_by_tenant(self, tenant_id, *, category=None) -&gt; list[EvaluationRun]: ...
+# v0: SqliteEvaluationRepository  -&gt;  futuro: Mongo / Oracle / Dynamo
+Diseño orientado a agregados (la decisión que importa)
+No existe un esquema físico único óptimo para Mongo y para Oracle a la vez — quieren formas opuestas: los document stores favorecen denormalizar y anidar; los relacionales favorecen normalizar con llaves foráneas. Lo que migra limpio a ambos es un diseño orientado a agregados (estilo DDD): cada agregado mapea naturalmente o a un documento o a un cluster de tablas padre-hijo. Agregados del dominio:
+Tenant — usuarios, plan, override de umbral. Pequeño.
+Product — posee sus Assets (con contexto de exposición) y PerceptionReports. Referencia a Tenant por id.
+EvaluationRun — el agregado pesado: posee la segmentación, la encuesta, todas las AgentResponses y el Result. Referencia a Product por id.
+Catálogos de configuración — taxonomía de segmentación, banco de preguntas, dimensiones de score, personas. Datos de referencia.
+InsightMemory — log append-only de resúmenes de evaluaciones pasadas (insights + calibración; ver sección 9).
+Snapshot de configuración dentro del EvaluationRun: al correr una evaluación, se copian la encuesta, el panel, las personas y los umbrales dentro del run en lugar de solo referenciar los catálogos (que son mutables). Así el run queda autocontenido y reproducible aunque los catálogos cambien después — y un agregado autocontenido es justo lo que se migra como un documento único o un registro coherente. Para un producto de insights, esta reproducibilidad histórica no es opcional.
+Backend local recomendado: SQLite con columnas JSON
+No archivos JSON sueltos. El esqueleto relacional (tenant, product, evaluation_run con sus llaves y timestamps) migra directo a Oracle/RDS, mientras que las columnas JSON (PerceptionReport, AgentResponses, payload del Result) migran directo a documentos de Mongo o a JSONB/items de DynamoDB. Es el puente que mantiene las dos puertas abiertas. Archivos sueltos no dan transacciones, ni concurrencia, ni queries — y hace falta filtrar resultados por perfil y listar por tenant desde el inicio.
+Reglas de portabilidad
+IDs generados por la aplicación (UUID), nunca autoincrementales del motor — portables entre relacional y documental.
+Referencias entre agregados siempre por id, nunca embebiendo un objeto que se muta en otro lado.
+schema_version en cada documento/registro + migraciones con Alembic en la ruta relacional.
+Timestamps en UTC ISO-8601.
+Dinero como Decimal o enteros (centavos), nunca float.
+11. Secuencia de build (para Claude Code)
+Etapa
+Objetivo
+Entregable
+Sprint 0 — Spike
+De-riesgar lo técnico: probar reacciones diferenciadas y creíbles.
+Vertical slice en FastAPI: 1 pieza → percepción (Gemini) → 6 personas contrastantes (DeepSeek con prefijo compartido para caching) → encuesta tipada → scores por dimensión. Capa Repository + SQLite (sección 10) desde el inicio. Proveedor configurable. Sin UI.
+Sprint 1
+Flujo de un producto end-to-end.
+Wizard del tenant (T3–T8), pipeline completo, scoring + gate, persistencia JSON.
+Sprint 2
+Resultados y recomendaciones.
+Dashboards de resultados (T9–T11), agente recomendador, exportación a PDF.
+Sprint 3
+Configurabilidad.
+CRUD del SPA admin (A2–A7), catálogos editables, umbral configurable.
+Fase 2
+Brand lift y calibración.
+Grupos de control (T12), registro predicción-vs-real, primeros contrastes.
+Orden de entrega de insumos: (1) este documento define el qué; (2) las pantallas se diseñan en Claude Design a partir de la sección 6; (3) documento + pantallas se pasan a Claude Code para implementar, empezando por el Sprint 0.
+12. Referencias
+AMAI — Niveles Socioeconómicos (Regla AMAI 2024, basada en ENIGH 2022): amai.org/NSE
+AMAI — NSE desagregado por manzana/AGEB (Censo 2020): amai.org/NSE
+Kantar — LINK+ / framework de efectividad creativa: kantar.com/solutions/creative
+System1 (ex BrainJuicer) — ad testing basado en respuesta emocional y fluency.
+Google AI for Developers — Video understanding (Gemini File API, muestreo 1 FPS): ai.google.dev/gemini-api/docs/video-understanding
+OpenAI — estado de soporte de video nativo (issue openai-node #1778, mar 2026).
+TwelveLabs — Pegasus 1.5 / Marengo 3.0, video understanding: twelvelabs.io
