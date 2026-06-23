@@ -123,7 +123,8 @@
 
 /* survey (P4) */
 .q-list { display: flex; flex-direction: column; gap: 10px; max-width: 720px; }
-.q-item { display: flex; align-items: center; gap: 13px; background: var(--surface); border: var(--bd); border-radius: var(--radius-sm); box-shadow: var(--sh); padding: 13px 15px; }
+.q-block { background: var(--surface); border: var(--bd); border-radius: var(--radius-sm); box-shadow: var(--sh); }
+.q-item { display: flex; align-items: center; gap: 13px; padding: 13px 15px; }
 .q-item .q-txt { flex: 1; }
 .q-item .q-txt b { font-size: 13px; font-weight: 600; display: block; }
 .q-item .q-txt small { font-size: 11px; color: var(--ink-3); }

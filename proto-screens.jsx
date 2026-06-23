@@ -36,62 +36,54 @@ const ROWS = [
   { thv: 'v4', img: 1, name: 'Carrusel lanzamiento', cat: 'Néctar Guayaba · Bebidas', chan: 'Instagram', plaza: '—', panel: '—', comp: '—', g: 'draft', st: 'draft', stl: 'Borrador', date: '9 jun' },
 ];
 
+const HOME_STEPS = [
+  { ic: 'upload', t: 'Sube tu pieza', d: 'Video, imagen o valla. Defines producto, canal y plaza de exposición.' },
+  { ic: 'users', t: 'Arma el panel', d: 'Cientos de consumidores sintéticos calibrados por NSE, edad y región de México.' },
+  { ic: 'cpu', t: 'Corre el análisis', d: 'Cada persona reacciona a tu pieza; agregamos un score compuesto y la intención de compra.' },
+  { ic: 'doc', t: 'Recibe el veredicto', d: 'Gate de aprobación, desglose por segmento y recomendaciones accionables en minutos.' },
+];
+
 function Dashboard({ go, theme, setTheme }) {
   return (
     <div className="main">
       <Topbar theme={theme} setTheme={setTheme}
         left={<div className="search"><Icon n="search" w={16} /><input placeholder="Buscar productos, piezas, evaluaciones…" /></div>}
-        actions={<Btn kind="primary" icon="plus" onClick={() => go('w1')}>Nuevo análisis</Btn>} />
+        actions={<Btn kind="primary" icon="plus" onClick={() => go('new-campana')}>Nueva campaña</Btn>} />
       <div className="scroll">
-        <div className="page-head">
-          <div><h1>Evaluaciones</h1><p>Pre-tests de tus piezas, evaluadas por el panel sintético de consumidores.</p></div>
-        </div>
-        <div className="kpis">
-          {KPIS.map(k => (
-            <div className="kpi" key={k.label}>
-              <div className="kpi-top"><span className="kpi-label">{k.label}</span><span className="kpi-ic"><Icon n={k.ic} w={16} /></span></div>
-              <div className="kpi-val num">{k.val}{k.small && <small> {k.small}</small>}</div>
-              <span className={`kpi-delta ${k.dcls}`}>{k.dic && <Icon n={k.dic} w={13} />}{k.delta}</span>
+        <section className="hero">
+          <div className="hero-copy">
+            <span className="hero-badge"><Icon n="flask" w={14} /> Panel sintético de consumidores · México</span>
+            <h1>Pre-testea tu creatividad antes de invertir en medios</h1>
+            <p>Expón cada pieza a un panel de consumidores sintéticos calibrado con datos reales del mercado mexicano. En minutos sabes si una pieza está lista para salir al aire o si debe regresar a creatividad — sin levantar un focus group ni gastar pauta a ciegas.</p>
+            <div className="hero-cta">
+              <Btn kind="primary" icon="plus" onClick={() => go('new-campana')}>Nueva campaña</Btn>
+              <button className="btn ghost" onClick={() => go('products')}>Ver mis campañas</button>
+            </div>
+            <div className="hero-stats">
+              <div className="hs"><b className="num">187</b><span>agentes prom. por análisis</span></div>
+              <div className="hs"><b className="num">~3 min</b><span>de pieza a veredicto</span></div>
+              <div className="hs"><b className="num">7 NSE</b><span>cobertura nacional</span></div>
+            </div>
+          </div>
+          <div className="hero-art">
+            <img src="hero-dashboard.png" alt="Panel de análisis con IA evaluando piezas creativas" />
+          </div>
+        </section>
+
+        <div className="ph2"><div><h2 className="sec-title">Cómo funciona</h2><p>Cuatro pasos, de la pieza al veredicto.</p></div></div>
+        <div className="steps-grid">
+          {HOME_STEPS.map((s, i) => (
+            <div className="step-card" key={i}>
+              <div className="step-head"><span className="step-n">{i + 1}</span><span className="step-ic"><Icon n={s.ic} w={18} /></span></div>
+              <b>{s.t}</b>
+              <p>{s.d}</p>
             </div>
           ))}
         </div>
-        <div className="toolbar">
-          <div className="tabs">
-            <span className="tab is-active">Todas <span className="pill">12</span></span>
-            <span className="tab">Listo</span><span className="tab">En análisis</span><span className="tab">Borrador</span>
-          </div>
-          <div className="right"><Btn kind="ghost" icon="filter">NSE · Ciudad</Btn></div>
-        </div>
-        <div className="table">
-          <div className="thead">
-            <span>Pieza</span><span>Exposición</span><span>Panel</span><span>Compuesto</span><span>Intención · Gate</span><span>Estado</span><span>Fecha</span>
-          </div>
-          <div className="rows">
-            {ROWS.map((r, i) => (
-              <div className="row" key={i} style={{ cursor: r.open ? 'pointer' : 'default' }} onClick={() => r.open && go('results')}>
-                <div className="cell piece">
-                  <span className={`thumb ${r.thv}`}><Icon n={r.img ? 'image' : 'play'} w={r.img ? 17 : 16} s={r.img ? 1.7 : 1} /></span>
-                  <span className="piece-meta"><b>{r.name}</b><small>{r.cat}</small></span>
-                </div>
-                <div className="cell expo"><b>{r.chan}</b><small>{r.plaza}</small></div>
-                <div className="cell num">{r.panel}</div>
-                <div className="cell"><span className={`score-pill ${r.comp === '—' ? 'muted' : ''}`}>{r.comp}</span></div>
-                <div className="cell">
-                  {r.g === 'pass' && <span className="gate"><span className="gate-dot" style={{ background: 'var(--pass)' }} /><span className="gate-num num">{r.gv}</span> <span className="tag pass"><Icon n="check" w={12} />{r.gl}</span></span>}
-                  {r.g === 'warn' && <span className="gate"><span className="gate-dot" style={{ background: 'var(--warn)' }} /><span className="gate-num num">{r.gv}</span> <span className="tag warn">{r.gl}</span></span>}
-                  {r.g === 'fail' && <span className="gate"><span className="gate-dot" style={{ background: 'var(--fail)' }} /><span className="gate-num num">{r.gv}</span> <span className="tag fail">{r.gl}</span></span>}
-                  {r.g === 'run' && <span className="tag neutral">Procesando</span>}
-                  {r.g === 'draft' && <span className="tag neutral">Sin correr</span>}
-                </div>
-                <div className="cell">
-                  {r.st === 'ready' && <span className="state ready"><span className="dot" />{r.stl}</span>}
-                  {r.st === 'run' && <span className="state run"><span className="dot" />Fan-out 64%<span className="mini-prog"><i style={{ width: '64%' }} /></span></span>}
-                  {r.st === 'draft' && <span className="state draft"><span className="dot" />{r.stl}</span>}
-                </div>
-                <div className="cell date">{r.date}</div>
-              </div>
-            ))}
-          </div>
+
+        <div className="home-cta">
+          <div className="hc-txt"><b>¿Listo para evaluar tu próxima campaña?</b><small>Crea tu campaña, define el contexto, sube las piezas y elige los targets — el panel sintético opina antes de que comprometas presupuesto.</small></div>
+          <Btn kind="primary" icon="plus" onClick={() => go('new-campana')}>Nueva campaña</Btn>
         </div>
       </div>
     </div>
@@ -186,21 +178,56 @@ const RES_DIMS = [
 ];
 const HEAT = [['A/B', '8.6', '11%'], ['C+', '8.1', '14%'], ['C', '7.7', '19%'], ['C−', '7.4', '17%'], ['D+', '6.8', '21%'], ['D', '5.9', '13%'], ['E', '5.1', '5%']];
 
-function ResultsExec() {
+const CSI = 7.8;
+function ResultsExec({ ev }) {
+  const kpis = (ev && ev.kpis) || [];
+  const scoreFor = (name) => {
+    const base = name.split(' (')[0];
+    const d = RES_DIMS.find(r => r[0] === name || r[0].startsWith(base) || base.startsWith(r[0].split(' (')[0]));
+    return d ? +d[2] : null;
+  };
+  const enriched = kpis.map(k => ({ ...k, score: scoreFor(k.name) }));
+  const sumW = enriched.reduce((a, k) => a + (k.weight || 0), 0) || 1;
+  const weightedTarget = enriched.reduce((a, k) => a + k.target * (k.weight || 0), 0) / sumW;
+  const topWeight = [...enriched].sort((a, b) => b.weight - a.weight).slice(0, 3);
+  const below = enriched.filter(k => k.score != null && k.score < k.target)
+    .sort((a, b) => (a.score - a.target) - (b.score - b.target)).slice(0, 3);
+  const csiPass = CSI >= weightedTarget;
   return (
     <>
       <div className="hero">
         <div className="hero-card score">
-          <span className="eyebrow">Índice de Efectividad Creativa</span>
+          <span className="eyebrow">Creative Science Index</span>
           <div className="gauge" style={{ '--val': 78 }}><div className="gauge-num"><b className="num">7.8</b><small>/ 10</small></div></div>
-          <div className="score-foot"><b>+0.9</b> sobre el promedio de categoría (6.9)</div>
+          <div className="score-foots">
+            <div className="score-foot"><b>+0.9</b> sobre el promedio de categoría (6.9)</div>
+            <div className="score-target">
+              <span className="st-lbl">Weighted acceptance target <span className="st-src">· Paso 4</span></span>
+              <span className="st-val"><b className="num">{weightedTarget.toFixed(1)}</b><span className={`st-tag ${csiPass ? 'ok' : 'bad'}`}>{csiPass ? <><Icon n="check" w={11} /> CSI por encima</> : 'CSI por debajo'}</span></span>
+            </div>
+          </div>
         </div>
         <div className="hero-card gate">
           <span className="eyebrow">Gate · Intención de compra</span>
-          <div className="gate-big"><b className="num">7.9</b><span className="gate-vs">vs. umbral 7.5</span></div>
           <div className="gate-status">
             <span className="tag pass"><Icon n="check" w={12} /> La pieza pasa</span>
             <p>La intención de compra ponderada supera el umbral del workspace. Avanza a producción.</p>
+          </div>
+          <div className="gate-kpis">
+            <div className="gk-block">
+              <span className="gk-h">KPIs de mayor peso ponderado</span>
+              {topWeight.map(k => (
+                <div className="gk-row" key={k.name}><span className="gk-name">{k.name}</span><span className="gk-w num">{k.weight}%</span></div>
+              ))}
+            </div>
+            <div className="gk-block">
+              <span className="gk-h">Por debajo de su target</span>
+              {below.length
+                ? below.map(k => (
+                  <div className="gk-row bad" key={k.name}><span className="gk-name">{k.name}</span><span className="gk-vt num">{k.score.toFixed(1)} <i>/ {k.target.toFixed(1)}</i></span></div>
+                ))
+                : <div className="gk-allok"><Icon n="check" w={13} /> Todos los KPIs están por encima de su umbral</div>}
+            </div>
           </div>
           <div className="gate-meter"><i style={{ width: '79%' }} /><span className="thresh" style={{ left: '75%' }} /></div>
         </div>
@@ -226,24 +253,11 @@ function ResultsExec() {
           ))}
         </div>
       </div>
-      <div className="two-col">
-        <div className="panel">
-          <div className="panel-head"><h2>Intención por nivel socioeconómico</h2></div>
-          <div className="heat-grid">
-            {HEAT.map(h => (
-              <div className="heatcell" key={h[0]} style={{ background: scoreColor(+h[1]) }}>
-                <div className="nse">{h[0]}</div><div className="hv num">{h[1]}</div><div className="wt">{h[2]}</div>
-              </div>
-            ))}
-          </div>
-          <p className="heat-note">El gate se cumple en <b>A/B–C</b>; se pierde de <b>C−</b> hacia abajo. La pieza no le habla a los segmentos bajos — coherente con el claim aspiracional.</p>
-        </div>
-        <div className="panel verbatims">
-          <div className="panel-head"><h2>Verbatims</h2></div>
-          <div className="vquote"><p>“El color del mango se ve bien rico, se me antojó desde el primer cuadro.”</p><div className="who"><span className="nse-tag">C</span> Mujer, 34 · Guadalajara</div></div>
-          <div className="vquote"><p>“Bonito el comercial… pero, ¿de qué marca era?”</p><div className="who"><span className="nse-tag">C+</span> Hombre, 41 · CDMX</div></div>
-          <div className="vquote"><p>“Se siente caro, como que no es para mí.”</p><div className="who"><span className="nse-tag">D+</span> Mujer, 52 · Oaxaca</div></div>
-        </div>
+      <div className="panel verbatims">
+        <div className="panel-head"><h2>Verbatims</h2></div>
+        <div className="vquote"><p>“El color del mango se ve bien rico, se me antojó desde el primer cuadro.”</p><div className="who"><span className="nse-tag">C</span> Mujer, 34 · Guadalajara</div></div>
+        <div className="vquote"><p>“Bonito el comercial… pero, ¿de qué marca era?”</p><div className="who"><span className="nse-tag">C+</span> Hombre, 41 · CDMX</div></div>
+        <div className="vquote"><p>“Se siente caro, como que no es para mí.”</p><div className="who"><span className="nse-tag">D+</span> Mujer, 52 · Oaxaca</div></div>
       </div>
     </>
   );

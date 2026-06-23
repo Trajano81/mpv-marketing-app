@@ -176,7 +176,7 @@
 
         <div class="hero">
           <div class="hero-card score">
-            <span class="eyebrow">Índice de Efectividad Creativa</span>
+            <span class="eyebrow">Creative Science Index</span>
             <div class="gauge" style="--val:78">
               <div class="gauge-num"><b>7.8</b><small>/ 10</small></div>
             </div>
