@@ -22,7 +22,7 @@ function A6({ theme, setTheme }) {
       <div className="scroll">
         <div className="two-60">
           <div className="panel">
-            <div className="panel-head"><h2>Índice de Efectividad Creativa</h2><span className="legend">suma {total}%</span></div>
+            <div className="panel-head"><h2>Creative Science Index</h2><span className="legend">suma {total}%</span></div>
             <div className="weights" style={{ maxWidth: 'none' }}>
               {SCORE_DIMS.map((d, i) => (
                 <div className="wrow" key={d[0]} style={{ gridTemplateColumns: '260px 1fr 44px' }}>

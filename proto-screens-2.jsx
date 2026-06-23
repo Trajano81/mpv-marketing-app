@@ -18,34 +18,35 @@ function TopbarP({ left, theme, setTheme, actions }) {
 
 /* ===================== PRODUCTOS ===================== */
 const PRODUCTS = [
-  { logo: 'NM', cls: 'v1', name: 'Néctar Aurora Mango', cat: 'Bebidas', brand: 'Aurora',
+  { key: 'mango', logo: 'NM', cls: 'v1', name: 'Néctar Aurora Mango', cat: 'Bebidas', brand: 'Aurora',
     pos: 'Aspiracional-tradicional', price: '$24 / 1L', target: 'Familias jóvenes',
     pieces: 4, runs: 4, comp: '7.4', pass: 3, warn: 0, fail: 1, last: '12 jun', status: 'active' },
-  { logo: 'NT', cls: 'v3', name: 'Néctar Aurora Tamarindo', cat: 'Bebidas', brand: 'Aurora',
+  { key: 'tamarindo', logo: 'NT', cls: 'v3', name: 'Néctar Aurora Tamarindo', cat: 'Bebidas', brand: 'Aurora',
     pos: 'Valor / práctico', price: '$22 / 1L', target: 'NSE C / C−',
     pieces: 2, runs: 2, comp: '7.0', pass: 1, warn: 1, fail: 0, last: '10 jun', status: 'active' },
-  { logo: 'AM', cls: 'v5', name: 'Agua Aurora Mineral', cat: 'Bebidas', brand: 'Aurora',
+  { key: 'agua', logo: 'AM', cls: 'v5', name: 'Agua Aurora Mineral', cat: 'Bebidas', brand: 'Aurora',
     pos: 'Aspiracional', price: '$15 / 1L', target: 'Gen Z urbano',
     pieces: 3, runs: 2, comp: '6.8', pass: 1, warn: 0, fail: 1, last: '5 jun', status: 'active' },
-  { logo: 'NG', cls: 'v6', name: 'Néctar Aurora Guayaba', cat: 'Bebidas', brand: 'Aurora',
+  { key: 'guayaba', logo: 'NG', cls: 'v6', name: 'Néctar Aurora Guayaba', cat: 'Bebidas', brand: 'Aurora',
     pos: 'Premium', price: '$28 / 1L', target: 'NSE A/B · C+',
     pieces: 1, runs: 0, comp: '—', pass: 0, warn: 0, fail: 0, last: '9 jun', status: 'draft' },
 ];
 
-function Products({ go, theme, setTheme }) {
+function Products({ go, setCampaign, theme, setTheme }) {
   const totals = PRODUCTS.reduce((a, p) => ({
     prods: a.prods + 1, pieces: a.pieces + p.pieces, runs: a.runs + p.runs,
   }), { prods: 0, pieces: 0, runs: 0 });
+  const viewEvals = (p) => { setCampaign({ key: p.key, name: p.name }); go('library'); };
   return (
     <div className="main">
       <TopbarP theme={theme} setTheme={setTheme}
-        left={<div className="search"><Icon n="search" w={16} /><input placeholder="Buscar productos…" /></div>}
-        actions={<Btn kind="primary" icon="plus" onClick={() => go('w1')}>Nuevo producto</Btn>} />
+        left={<div className="search"><Icon n="search" w={16} /><input placeholder="Buscar campañas…" /></div>}
+        actions={<Btn kind="primary" icon="plus" onClick={() => go('new-campana')}>Nueva campaña</Btn>} />
       <div className="scroll">
         <div className="ph2">
           <div>
-            <h1>Productos</h1>
-            <p>{totals.prods} productos · {totals.pieces} piezas · {totals.runs} análisis corridos en el workspace.</p>
+            <h1>Campañas</h1>
+            <p>{totals.prods} campañas · {totals.pieces} piezas · {totals.runs} análisis corridos en el workspace.</p>
           </div>
         </div>
         <div className="cat-grid">
@@ -83,8 +84,8 @@ function Products({ go, theme, setTheme }) {
                 <div className="prod-foot">
                   <span className="date-lbl">Última actividad · {p.last}</span>
                   <div className="prod-actions">
-                    {p.runs > 0 && <button className="btn ghost" onClick={() => go('dashboard')}>Ver evaluaciones</button>}
-                    <button className="btn primary" onClick={() => go('w1')}><Icon n="plus" w={15} />Análisis</button>
+                    {p.runs > 0 && <button className="btn ghost" onClick={() => viewEvals(p)}>Ver evaluaciones</button>}
+                    <button className="btn primary" onClick={() => go('new-pieza')}><Icon n="plus" w={15} />Analizar nueva pieza</button>
                   </div>
                 </div>
               </div>
@@ -98,73 +99,50 @@ function Products({ go, theme, setTheme }) {
 
 /* ===================== BIBLIOTECA ===================== */
 const ASSETS = [
-  { cls: 'v1', kind: 'Video', icon: 'play', name: 'spot_30s_sabor.mp4', spec: '0:30 · 48 MB', product: 'Néctar Mango', chan: 'TV abierta', plaza: 'Nacional', score: '7.8', g: 'pass' },
-  { cls: 'v6', kind: 'Influencer', icon: 'play', name: 'influencer_mty_receta.mp4', spec: '1:12 · 95 MB', product: 'Néctar Mango', chan: 'TikTok', plaza: 'Monterrey', score: '8.3', g: 'pass' },
-  { cls: 'v3', kind: 'Influencer', icon: 'play', name: 'reel_chefcito.mp4', spec: '0:24 · 31 MB', product: 'Tamarindo', chan: 'TikTok', plaza: 'Nacional', score: '7.1', g: 'warn' },
-  { cls: 'v2', kind: 'Valla', icon: 'image', name: 'valla_insurgentes.jpg', spec: '4000×1500 · 8 MB', product: 'Néctar Mango', chan: 'OOH / Valla', plaza: 'CDMX', score: '6.4', g: 'fail' },
-  { cls: 'v5', kind: 'Video', icon: 'play', name: 'spot_15s_corte.mp4', spec: '0:15 · 22 MB', product: 'Tamarindo', chan: 'TV abierta', plaza: 'Norte', score: null, g: 'run' },
-  { cls: 'v5', kind: 'Imagen', icon: 'image', name: 'post_agua_genz.jpg', spec: '1080×1080 · 3 MB', product: 'Agua Mineral', chan: 'Instagram', plaza: 'Nacional', score: '6.8', g: 'warn' },
-  { cls: 'v4', kind: 'Imagen', icon: 'image', name: 'carrusel_lanzamiento.jpg', spec: '1080×1350 · 4 MB', product: 'Guayaba', chan: 'Instagram', plaza: '—', score: null, g: 'draft' },
-  { cls: 'v1', kind: 'Video', icon: 'play', name: 'spot_agua_amanecer.mp4', spec: '0:20 · 30 MB', product: 'Agua Mineral', chan: 'Streaming', plaza: 'Nacional', score: null, g: 'draft' },
+  { id: 'mango-spot30', cls: 'v1', kind: 'Video', icon: 'play', name: 'spot_30s_sabor.mp4', spec: '0:30 · 48 MB', pkey: 'mango', product: 'Néctar Mango', chan: 'TV abierta', plaza: 'Nacional', score: '7.8', g: 'pass', date: '12 jun' },
+  { id: 'mango-inf', cls: 'v6', kind: 'Influencer', icon: 'play', name: 'influencer_mty_receta.mp4', spec: '1:12 · 95 MB', pkey: 'mango', product: 'Néctar Mango', chan: 'TikTok', plaza: 'Monterrey', score: '8.3', g: 'pass', date: '7 jun' },
+  { id: 'tam-reel', cls: 'v3', kind: 'Influencer', icon: 'play', name: 'reel_chefcito.mp4', spec: '0:24 · 31 MB', pkey: 'tamarindo', product: 'Tamarindo', chan: 'TikTok', plaza: 'Nacional', score: '7.1', g: 'warn', date: '10 jun' },
+  { id: 'mango-valla', cls: 'v2', kind: 'Valla', icon: 'image', name: 'valla_insurgentes.jpg', spec: '4000×1500 · 8 MB', pkey: 'mango', product: 'Néctar Mango', chan: 'OOH / Valla', plaza: 'CDMX', score: '6.4', g: 'fail', date: '11 jun' },
+  { id: 'tam-spot15', cls: 'v5', kind: 'Video', icon: 'play', name: 'spot_15s_corte.mp4', spec: '0:15 · 22 MB', pkey: 'tamarindo', product: 'Tamarindo', chan: 'TV abierta', plaza: 'Norte', score: null, g: 'run', date: 'hoy' },
+  { id: 'agua-post', cls: 'v5', kind: 'Imagen', icon: 'image', name: 'post_agua_genz.jpg', spec: '1080×1080 · 3 MB', pkey: 'agua', product: 'Agua Mineral', chan: 'Instagram', plaza: 'Nacional', score: '6.8', g: 'warn', date: '5 jun' },
+  { id: 'guay-carr', cls: 'v4', kind: 'Imagen', icon: 'image', name: 'carrusel_lanzamiento.jpg', spec: '1080×1350 · 4 MB', pkey: 'guayaba', product: 'Guayaba', chan: 'Instagram', plaza: '—', score: null, g: 'draft', date: '9 jun' },
+  { id: 'agua-spot', cls: 'v1', kind: 'Video', icon: 'play', name: 'spot_agua_amanecer.mp4', spec: '0:20 · 30 MB', pkey: 'agua', product: 'Agua Mineral', chan: 'Streaming', plaza: 'Nacional', score: null, g: 'draft', date: '6 jun' },
 ];
 const LIB_FILTERS = ['Todos', 'Video', 'Imagen', 'Valla', 'Influencer'];
 
-function Library({ go, theme, setTheme }) {
-  const [f, setF] = useStateP('Todos');
-  const list = ASSETS.filter(a => f === 'Todos' || a.kind === f);
-  const counts = LIB_FILTERS.reduce((m, k) => { m[k] = k === 'Todos' ? ASSETS.length : ASSETS.filter(a => a.kind === k).length; return m; }, {});
+/* tarjeta de pieza con preview rellenable (image-slot) + estado */
+function PieceCard({ a, go }) {
+  const isVideo = a.kind === 'Video' || a.kind === 'Influencer';
   return (
-    <div className="main">
-      <TopbarP theme={theme} setTheme={setTheme}
-        left={<div className="search"><Icon n="search" w={16} /><input placeholder="Buscar piezas por nombre o producto…" /></div>}
-        actions={<Btn kind="primary" icon="upload" onClick={() => go('w2')}>Subir pieza</Btn>} />
-      <div className="scroll">
-        <div className="ph2">
-          <div>
-            <h1>Biblioteca de piezas</h1>
-            <p>Todos los audiovisuales del workspace con su contexto de exposición y estado de evaluación.</p>
-          </div>
+    <div className="lib-card">
+      <div className={`lib-thumb-wrap ${a.cls}`}>
+        <image-slot id={`prev-${a.id}`} shape="rect" fit="cover" placeholder="Arrastra un frame"></image-slot>
+        <span className="lib-kind">{a.kind}</span>
+        {a.score && <span className={`lib-badge ${a.g}`}>{a.score}</span>}
+        {isVideo && <span className="play-ov"><Icon n="play" w={20} /></span>}
+      </div>
+      <div className="lib-body">
+        <b>{a.name}</b>
+        <small>{a.product} · {a.spec}</small>
+        <div className="lib-expo">
+          <span className="chip sm">{a.chan}</span>
+          <span className="chip sm">{a.plaza}</span>
         </div>
-        <div className="toolbar">
-          <div className="filters">
-            {LIB_FILTERS.map(k => (
-              <span key={k} className={`fchip ${f === k ? 'on' : ''}`} onClick={() => setF(k)}>{k}<span className="fc-n num">{counts[k]}</span></span>
-            ))}
-          </div>
-        </div>
-        <div className="lib-grid">
-          {list.map((a, i) => (
-            <div className="lib-card" key={i}>
-              <div className={`lib-thumb ${a.cls}`}>
-                <Icon n={a.icon} w={30} s={a.icon === 'play' ? 1 : 1.6} />
-                <span className="lib-kind">{a.kind}</span>
-                {a.score && <span className={`lib-badge ${a.g}`}>{a.score}</span>}
-              </div>
-              <div className="lib-body">
-                <b>{a.name}</b>
-                <small>{a.product} · {a.spec}</small>
-                <div className="lib-expo">
-                  <span className="chip sm">{a.chan}</span>
-                  <span className="chip sm">{a.plaza}</span>
-                </div>
-              </div>
-              <div className="lib-foot">
-                {a.g === 'run'
-                  ? <span className="state run"><span className="dot" />Procesando</span>
-                  : a.g === 'draft'
-                    ? <span className="state draft"><span className="dot" />Sin evaluar</span>
-                    : <span className="state ready"><span className="dot" />Evaluada</span>}
-                <button className="lib-go" onClick={() => a.score ? go('results') : go('w2')}>
-                  {a.score ? 'Ver resultados' : 'Evaluar'}<Icon n="arrowR" w={14} />
-                </button>
-              </div>
-            </div>
-          ))}
-        </div>
+      </div>
+      <div className="lib-foot">
+        {a.g === 'run'
+          ? <span className="state run"><span className="dot" />Procesando</span>
+          : a.g === 'draft'
+            ? <span className="state draft"><span className="dot" />Sin evaluar · {a.date}</span>
+            : <span className="state ready"><span className="dot" />Evaluada · {a.date}</span>}
+        <button className="lib-go" onClick={() => a.score ? go('results') : go('new-pieza')}>
+          {a.score ? 'Ver resultados' : 'Evaluar'}<Icon n="arrowR" w={14} />
+        </button>
       </div>
     </div>
   );
 }
+
 
 /* ===================== PERSONAS (panel sintético) ===================== */
 const NSE_DIST = [['A/B', 7], ['C+', 12], ['C', 17], ['C−', 17], ['D+', 19], ['D', 21], ['E', 7]];
@@ -378,8 +356,9 @@ function Settings({ theme, setTheme }) {
   );
 }
 
-/* ===================== ANÁLISIS (hub de runs) ===================== */
+/* ===================== ANÁLISIS (piezas + runs en curso) ===================== */
 const RUN_STAGES = ['Percepción', 'Fan-out', 'Agregación', 'Reporte'];
+const PKEY_OF = { 'Néctar Mango': 'mango', 'Tamarindo': 'tamarindo', 'Agua Mineral': 'agua', 'Guayaba': 'guayaba' };
 const ACTIVE_RUNS = [
   { cls: 'v5', icon: 'play', name: 'Spot 15s — corte', product: 'Tamarindo', expo: 'TV abierta · Norte', stage: 1, done: 120, n: 187, eta: '1m 10s', cost: '$2.40' },
   { cls: 'v3', icon: 'play', name: 'Reel verano @sol', product: 'Agua Mineral', expo: 'TikTok · Nacional', stage: 0, done: 0, n: 140, eta: '3m 05s', cost: '$0.60' },
@@ -395,86 +374,88 @@ const RUN_HISTORY = [
   { cls: 'v3', icon: 'play', name: 'Spot navideño — corte A', product: 'Néctar Mango', st: 'error', panel: '0 / 160', cost: '$0.20', dur: '—', date: '4 jun' },
 ];
 
-function Analyses({ go, theme, setTheme }) {
+function Analyses({ go, campaign, setCampaign, theme, setTheme }) {
+  const [f, setF] = useStateP('Todos');
+  const base = campaign ? ASSETS.filter(a => a.pkey === campaign.key) : ASSETS;
+  const list = base.filter(a => f === 'Todos' || a.kind === f);
+  const counts = LIB_FILTERS.reduce((m, k) => { m[k] = k === 'Todos' ? base.length : base.filter(a => a.kind === k).length; return m; }, {});
+  const nEval = base.filter(a => a.g === 'pass' || a.g === 'warn' || a.g === 'fail').length;
+  const nRun = base.filter(a => a.g === 'run').length + ACTIVE_RUNS.length;
+  const activeRuns = campaign ? ACTIVE_RUNS.filter(r => PKEY_OF[r.product] === campaign.key) : ACTIVE_RUNS;
   return (
     <div className="main">
       <TopbarP theme={theme} setTheme={setTheme}
-        left={<div className="search"><Icon n="search" w={16} /><input placeholder="Buscar análisis por pieza o producto…" /></div>}
-        actions={<Btn kind="primary" icon="plus" onClick={() => go('w1')}>Nuevo análisis</Btn>} />
+        left={<div className="search"><Icon n="search" w={16} /><input placeholder="Buscar piezas o análisis…" /></div>}
+        actions={<Btn kind="primary" icon="plus" onClick={() => go('new-pieza')}>Analizar nueva pieza</Btn>} />
       <div className="scroll">
         <div className="ph2">
           <div>
             <h1>Análisis</h1>
-            <p><b style={{ color: 'var(--accent)' }}>3 en curso</b> · 12 completados · 1 en cola · $38.40 gastados este mes.</p>
+            <p>{base.length} piezas · <b style={{ color: 'var(--accent)' }}>{activeRuns.length} en curso</b> · {nEval} evaluadas en el workspace.</p>
           </div>
         </div>
 
-        <div className="ph2"><div><h2 className="sec-title">En curso</h2></div></div>
-        <div className="runs-active">
-          {ACTIVE_RUNS.map((r, k) => {
-            const pct = r.stage === 0 ? 10 : Math.round(r.done / r.n * 100);
-            const metaLeft = r.stage === 0 ? 'Analizando video y audio' : `${r.done} / ${r.n} agentes`;
-            return (
-              <div className="run-card" key={k}>
-                <div className="rc-top">
-                  <span className={`thumb ${r.cls}`}><Icon n={r.icon} w={r.icon === 'play' ? 15 : 16} s={r.icon === 'play' ? 1 : 1.7} /></span>
-                  <div className="rc-id"><b>{r.name}</b><small>{r.product} · {r.expo}</small></div>
-                </div>
-                <div className="rc-pipe">
-                  {RUN_STAGES.map((s, i) => (
-                    <React.Fragment key={s}>
-                      <span className={`rp-dot ${i < r.stage ? 'done' : i === r.stage ? 'active' : ''}`} title={s}>
-                        {i < r.stage ? <Icon n="check" w={13} /> : i + 1}
-                      </span>
-                      {i < RUN_STAGES.length - 1 && <span className={`rp-line ${i < r.stage ? 'done' : ''}`} />}
-                    </React.Fragment>
-                  ))}
-                </div>
-                <div className="rc-prog">
-                  <div className="rc-bar"><i style={{ width: `${pct}%` }} /></div>
-                  <div className="rc-pmeta"><span>{metaLeft} · <b style={{ fontWeight: 600 }}>{RUN_STAGES[r.stage]}</b></span><span className="num">{pct}%</span></div>
-                </div>
-                <div className="rc-foot">
-                  <div className="rc-stats">
-                    <span><Icon n="clock" w={13} /> ETA {r.eta}</span>
-                    <span><Icon n="coin" w={13} /> {r.cost}</span>
+        {campaign && (
+          <div className="camp-banner">
+            <Icon n="filter" w={15} />
+            <span>Mostrando la campaña <b>{campaign.name}</b> · {base.length} {base.length === 1 ? 'pieza' : 'piezas'}</span>
+            <button className="camp-clear" onClick={() => { setCampaign(null); setF('Todos'); }}>Ver todas<Icon n="x" w={14} /></button>
+          </div>
+        )}
+
+        {activeRuns.length > 0 && <>
+          <div className="ph2"><div><h2 className="sec-title">En curso</h2></div></div>
+          <div className="runs-active">
+            {activeRuns.map((r, k) => {
+              const pct = r.stage === 0 ? 10 : Math.round(r.done / r.n * 100);
+              const metaLeft = r.stage === 0 ? 'Analizando video y audio' : `${r.done} / ${r.n} agentes`;
+              return (
+                <div className="run-card" key={k}>
+                  <div className="rc-top">
+                    <span className={`thumb ${r.cls}`}><Icon n={r.icon} w={r.icon === 'play' ? 15 : 16} s={r.icon === 'play' ? 1 : 1.7} /></span>
+                    <div className="rc-id"><b>{r.name}</b><small>{r.product} · {r.expo}</small></div>
                   </div>
-                  <button className="btn ghost" onClick={() => go('progress')}>Ver progreso</button>
+                  <div className="rc-pipe">
+                    {RUN_STAGES.map((s, i) => (
+                      <React.Fragment key={s}>
+                        <span className={`rp-dot ${i < r.stage ? 'done' : i === r.stage ? 'active' : ''}`} title={s}>
+                          {i < r.stage ? <Icon n="check" w={13} /> : i + 1}
+                        </span>
+                        {i < RUN_STAGES.length - 1 && <span className={`rp-line ${i < r.stage ? 'done' : ''}`} />}
+                      </React.Fragment>
+                    ))}
+                  </div>
+                  <div className="rc-prog">
+                    <div className="rc-bar"><i style={{ width: `${pct}%` }} /></div>
+                    <div className="rc-pmeta"><span>{metaLeft} · <b style={{ fontWeight: 600 }}>{RUN_STAGES[r.stage]}</b></span><span className="num">{pct}%</span></div>
+                  </div>
+                  <div className="rc-foot">
+                    <div className="rc-stats">
+                      <span><Icon n="clock" w={13} /> ETA {r.eta}</span>
+                      <span><Icon n="coin" w={13} /> {r.cost}</span>
+                    </div>
+                    <button className="btn ghost" onClick={() => go('progress')}>Ver progreso</button>
+                  </div>
                 </div>
-              </div>
-            );
-          })}
-        </div>
-
-        <div className="ph2"><div><h2 className="sec-title">Historial</h2></div></div>
-        <div className="table runtab">
-          <div className="thead">
-            <span>Pieza</span><span>Estado</span><span>Panel</span><span>Costo</span><span>Duración</span><span>Fecha</span>
+              );
+            })}
           </div>
-          <div className="rows">
-            {RUN_HISTORY.map((r, i) => (
-              <div className="row" key={i} style={{ cursor: r.st === 'ready' ? 'pointer' : 'default' }} onClick={() => r.st === 'ready' && go('results')}>
-                <div className="cell piece">
-                  <span className={`thumb ${r.cls}`}><Icon n={r.icon} w={r.icon === 'play' ? 16 : 17} s={r.icon === 'play' ? 1 : 1.7} /></span>
-                  <span className="piece-meta"><b>{r.name}</b><small>{r.product}</small></span>
-                </div>
-                <div className="cell">
-                  {r.st === 'ready' && <span className="state ready"><span className="dot" />Listo</span>}
-                  {r.st === 'queue' && <span className="tag neutral">En cola</span>}
-                  {r.st === 'draft' && <span className="state draft"><span className="dot" />Borrador</span>}
-                  {r.st === 'error' && <span className="run-err"><span className="tag fail">Error</span><button className="lib-go" onClick={(e) => { e.stopPropagation(); go('w1'); }}><Icon n="refresh" w={13} />Reintentar</button></span>}
-                </div>
-                <div className="cell num">{r.panel}</div>
-                <div className="cell num">{r.cost}</div>
-                <div className="cell date">{r.dur}</div>
-                <div className="cell date">{r.date}</div>
-              </div>
+        </>}
+
+        <div className="toolbar">
+          <div className="tabsec"><h2 className="sec-title">Piezas</h2></div>
+          <div className="filters">
+            {LIB_FILTERS.map(k => (
+              <span key={k} className={`fchip ${f === k ? 'on' : ''}`} onClick={() => setF(k)}>{k}<span className="fc-n num">{counts[k]}</span></span>
             ))}
           </div>
+        </div>
+        <div className="lib-grid">
+          {list.map(a => <PieceCard key={a.id} a={a} go={go} />)}
         </div>
       </div>
     </div>
   );
 }
 
-Object.assign(window, { Products, Library, Personas, Settings, Analyses });
+Object.assign(window, { Products, Personas, Settings, Analyses });

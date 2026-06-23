@@ -46,6 +46,8 @@ const ICONS = {
   idcard: '<rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="8.5" cy="11" r="2"/><path d="M5.5 16c.5-1.6 1.7-2.3 3-2.3s2.5.7 3 2.3M14 9.5h4M14 13h3"/>',
   cpu: '<rect x="7" y="7" width="10" height="10" rx="1.5"/><path d="M10 7V4M14 7V4M10 20v-3M14 20v-3M7 10H4M7 14H4M20 10h-3M20 14h-3"/>',
   globe: '<circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.5 2.4 2.5 15.6 0 18M12 3c-2.5 2.4-2.5 15.6 0 18"/>',
+  cart: '<circle cx="9" cy="20" r="1.4"/><circle cx="17" cy="20" r="1.4"/><path d="M3 4h2l2.2 11.2a1.5 1.5 0 0 0 1.5 1.2h8.1a1.5 1.5 0 0 0 1.5-1.2L21 8H6"/>',
+  car: '<path d="M5 16v2M19 16v2M3 13l1.5-5A2 2 0 0 1 6.4 6.6h11.2A2 2 0 0 1 19.5 8L21 13M3 13h18v3a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1v-3Z"/><circle cx="7.5" cy="13.5" r="1"/><circle cx="16.5" cy="13.5" r="1"/>',
 };
 function Icon({ n, w, s }) {
   return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={s || 1.7}
@@ -63,9 +65,10 @@ function Btn({ kind = 'ghost', icon, iconR, children, onClick, cls = '' }) {
 
 const NAV = [
   { id: 'dashboard', icon: 'home', label: 'Inicio' },
-  { id: 'products', icon: 'box', label: 'Productos' },
+  { id: 'products', icon: 'box', label: 'Campañas' },
   { id: 'analyses', icon: 'chart', label: 'Análisis', count: 3 },
-  { id: 'library', icon: 'layers', label: 'Biblioteca' },
+  { id: 'insights', icon: 'bulb', label: 'Insights' },
+  { id: 'postview', icon: 'target', label: 'Postview' },
 ];
 
 const CFG_NAV = [
@@ -75,7 +78,7 @@ const CFG_NAV = [
 function Sidebar({ route, go }) {
   const activeTop = ['dashboard'].includes(route) ? 'dashboard'
     : route.startsWith('w') || route === 'progress' ? 'analyses'
-    : ['results', 'desglose', 'recos'].includes(route) ? 'analyses' : route;
+    : ['results', 'desglose', 'recos', 'library'].includes(route) ? 'analyses' : route;
   return (
     <aside className="sidebar">
       <div className="side-brand">
@@ -131,8 +134,8 @@ function ThemeToggle({ theme, setTheme }) {
 }
 
 const WSTEPS = [
-  { id: 'w1', n: '1', t: 'Producto' },
-  { id: 'w2', n: '2', t: 'Audiovisuales' },
+  { id: 'w1', n: '1', t: 'Campaña' },
+  { id: 'w2', n: '2', t: 'Audiovisuales/Touchpoints' },
   { id: 'w3', n: '3', t: 'Segmentación' },
   { id: 'w4', n: '4', t: 'Encuesta' },
   { id: 'w5', n: '5', t: 'Revisión' },

@@ -180,6 +180,17 @@ function A3({ theme, setTheme }) {
             </div>
           </div>
         </div>
+        <div className="asec">
+          <div className="asec-head"><div><h2>Límites del panel sintético</h2><p>Rango permitido de agentes por análisis para todos los tenants. El wizard de campaña respeta estos topes en el slider “Tamaño del panel”.</p></div></div>
+          <div className="panel">
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 18, maxWidth: 560 }}>
+              <div className="field"><label>Mínimo de agentes</label><input className="input num" defaultValue="90" /></div>
+              <div className="field"><label>Máximo de agentes</label><input className="input num" defaultValue="540" /></div>
+              <div className="field"><label>Default sugerido</label><input className="input num" defaultValue="180" /></div>
+            </div>
+            <p className="hint" style={{ marginTop: 14 }}>El tenant solo puede graduar su panel dentro de <b>90–540</b> agentes; estos valores alimentan el conteo de combinaciones y ponderaciones por categoría.</p>
+          </div>
+        </div>
       </div>
     </div>
   );
